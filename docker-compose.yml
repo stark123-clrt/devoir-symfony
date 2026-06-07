@@ -1,6 +1,6 @@
 services:
   devoir-symfony:
-    container_name: optimization-symfony
+    container_name: devoir-symfony
     build:
       context: .
       dockerfile: Dockerfile

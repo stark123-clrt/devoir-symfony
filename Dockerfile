@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -26,6 +26,8 @@ RUN if [ -f composer.json ]; then composer install --no-interaction --no-ansi --
 
 RUN chown -R www-data:www-data /var/www/html || true
 
-EXPOSE 9000
+RUN a2enmod rewrite \
+ && sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf /etc/apache2/apache2.conf \
+ && printf '%s\n' '<Directory /var/www/html/public>' '    AllowOverride All' '    Require all granted' '</Directory>' >> /etc/apache2/apache2.conf
 
-CMD ["php-fpm"]
+EXPOSE 80

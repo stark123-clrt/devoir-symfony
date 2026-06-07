@@ -3,3 +3,5 @@ node_modules
 .git
 var
 .env
+mysql/
+logs/
