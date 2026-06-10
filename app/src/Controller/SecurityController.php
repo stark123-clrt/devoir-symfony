@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\NoteRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -10,17 +11,22 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class SecurityController extends AbstractController
 {
     #[Route(path: '/', name: 'app_home')]
-    public function home(): Response
+    public function home(NoteRepository $noteRepository): Response
     {
-        return $this->render('home/index.html.twig');
+        if ($this->getUser()) {
+            return $this->redirectToRoute('note_index');
+        }
+
+        $publicNotes = $noteRepository->findAllPublic();
+        return $this->render('home/index.html.twig', compact('publicNotes'));
     }
 
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // if ($this->getUser()) {
-        //     return $this->redirectToRoute('target_path');
-        // }
+        if ($this->getUser()) {
+            return $this->redirectToRoute('note_index');
+        }
 
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();

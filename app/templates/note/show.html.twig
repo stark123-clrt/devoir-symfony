@@ -1,0 +1,113 @@
+{% extends app.user ? 'layout/app.html.twig' : 'layout/public.html.twig' %}
+
+{% block title %}{{ note.title }}{% endblock %}
+{% block page_title %}{{ note.title }}{% endblock %}
+
+{% block topbar_actions %}
+    {% if app.user and note.owner == app.user %}
+        <a href="{{ path('note_edit', {'id': note.id}) }}"
+           class="inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-terracotta-600 hover:bg-terracotta-700 text-white text-sm font-semibold transition shadow-sm">
+            <i data-lucide="pencil" class="w-4 h-4"></i> Éditer
+        </a>
+    {% endif %}
+{% endblock %}
+
+{% block main %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+
+    <a href="{{ app.user ? path('note_index') : path('app_home') }}"
+       class="inline-flex items-center gap-1.5 text-sm font-semibold text-stone-500 hover:text-stone-900 transition mb-5">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        {{ app.user ? 'Retour aux notes' : 'Retour à l\'accueil' }}
+    </a>
+
+    <div class="bg-white border border-stone-300 rounded-xl overflow-hidden">
+
+        {# Header #}
+        <div class="px-6 sm:px-7 pt-7 pb-5 border-b border-stone-100">
+            <div class="flex items-start justify-between gap-4 flex-wrap">
+                <div class="flex-1 min-w-0">
+                    <h1 class="font-display font-bold text-2xl text-stone-900 mb-2" style="letter-spacing:-0.02em">
+                        {{ note.title }}
+                    </h1>
+                    <div class="flex items-center flex-wrap gap-3 text-xs font-semibold text-stone-400">
+                        <span class="inline-flex items-center gap-1.5">
+                            <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                            {{ note.createdAt|date('d M Y à H:i') }}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full
+                            {{ note.isPublic ? 'bg-green-100 text-green-600' : 'bg-stone-100 text-stone-500' }}">
+                            <i data-lucide="{{ note.isPublic ? 'globe' : 'lock' }}" class="w-3.5 h-3.5"></i>
+                            {{ note.isPublic ? 'Publique' : 'Privée' }}
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-terracotta-50 text-terracotta-700">
+                            <i data-lucide="sticky-note" class="w-3.5 h-3.5"></i>
+                            par {{ note.owner.pseudo }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Contenu #}
+        <div class="px-6 sm:px-7 py-6">
+            <div class="text-[15px] text-stone-700 leading-relaxed whitespace-pre-wrap">{{ note.content }}</div>
+        </div>
+
+        {# Notes liées #}
+        {% if note.linkedNotes is not empty %}
+            <div class="px-6 sm:px-7 py-5 border-t border-stone-100">
+                <h3 class="text-sm font-semibold text-stone-700 mb-3 flex items-center gap-2">
+                    <i data-lucide="link" class="w-4 h-4 text-stone-400"></i>
+                    Notes liées
+                </h3>
+                <div class="flex flex-col gap-2">
+                    {% for linked in note.linkedNotes %}
+                        <a href="{{ path('note_show', {'id': linked.id}) }}"
+                           class="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-stone-200 hover:border-terracotta-300 hover:bg-terracotta-50/50 transition">
+                            <i data-lucide="sticky-note" class="w-4 h-4 text-terracotta-600 flex-none"></i>
+                            <span class="text-sm font-semibold text-stone-700 flex-1 truncate">{{ linked.title }}</span>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-stone-400 flex-none"></i>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {# Footer owner seulement #}
+        {% if app.user and note.owner == app.user %}
+            <div class="px-6 sm:px-7 py-4 border-t border-stone-100 bg-stone-50/60 flex items-center justify-between">
+                <a href="{{ path('note_index') }}"
+                   class="inline-flex items-center gap-1.5 text-sm font-semibold text-stone-500 hover:text-stone-900 transition">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Mes notes
+                </a>
+                <form method="post" action="{{ path('note_delete', {'id': note.id}) }}"
+                      onsubmit="return confirm('Supprimer cette note définitivement ?')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ note.id) }}">
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 h-8 px-3 rounded-lg text-red-500 hover:bg-red-50 text-sm font-semibold transition">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+
+    </div>
+
+    {# Bannière connexion pour visiteurs #}
+    {% if not app.user %}
+        <div class="mt-6 bg-terracotta-50 border border-terracotta-200 rounded-xl px-5 py-4 flex items-center gap-4">
+            <i data-lucide="log-in" class="w-5 h-5 text-terracotta-600 flex-none"></i>
+            <p class="text-sm text-terracotta-800 flex-1">
+                <span class="font-semibold">Vous avez des idées à partager ?</span>
+                Créez votre compte pour écrire vos propres notes.
+            </p>
+            <a href="{{ path('app_register') }}"
+               class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-terracotta-600 hover:bg-terracotta-700 text-white text-sm font-semibold transition flex-none">
+                S'inscrire
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

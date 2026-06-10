@@ -1,0 +1,66 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Profil{% endblock %}
+
+{% block page_title %}Profil{% endblock %}
+
+{% block topbar_actions %}
+    <a href="{{ path('profile_edit') }}"
+       class="inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-terracotta-600 hover:bg-terracotta-700 text-white text-sm font-semibold transition shadow-sm">
+        <i data-lucide="pencil" class="w-4 h-4"></i> Éditer le profil
+    </a>
+{% endblock %}
+
+{% block main %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+
+    {# Carte utilisateur #}
+    <div class="bg-white border border-stone-300 rounded-xl p-6 flex items-center gap-5 mb-8">
+        <span class="flex items-center justify-center w-16 h-16 rounded-full bg-terracotta-100 text-terracotta-700 text-2xl font-display font-bold flex-none">
+            {{ user.pseudo|slice(0,2)|upper }}
+        </span>
+        <div class="flex-1 min-w-0">
+            <h2 class="font-display font-bold text-2xl" style="letter-spacing:-0.02em">{{ user.pseudo }}</h2>
+            <p class="text-sm text-stone-500 flex items-center gap-1.5 mt-0.5">
+                <i data-lucide="mail" class="w-4 h-4"></i> {{ user.email }}
+            </p>
+        </div>
+    </div>
+
+    {# En-tête liste notes #}
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-xl" style="letter-spacing:-0.02em">Mes notes</h3>
+        <span class="text-sm text-stone-500">{{ notes|length }} note{{ notes|length != 1 ? 's' : '' }}</span>
+    </div>
+
+    {# Liste des notes #}
+    {% if notes is empty %}
+        <div class="flex flex-col items-center justify-center py-16 text-center">
+            <span class="flex items-center justify-center w-12 h-12 rounded-xl bg-terracotta-50 text-terracotta-600 mb-3">
+                <i data-lucide="sticky-note" class="w-6 h-6"></i>
+            </span>
+            <p class="text-sm font-semibold text-stone-700 mb-1">Aucune note pour le moment</p>
+            <a href="{{ path('note_new') }}" class="text-sm font-semibold text-terracotta-600 hover:text-terracotta-700 transition">
+                Créer une note
+            </a>
+        </div>
+    {% else %}
+        <div class="flex flex-col gap-3">
+            {% for note in notes %}
+                <a href="{{ path('note_show', {'id': note.id}) }}"
+                   class="ember-card flex items-center gap-3 px-4 py-3 bg-white border border-stone-300 rounded-xl hover:shadow-soft hover:-translate-y-0.5 transition">
+                    <span class="flex items-center justify-center w-9 h-9 rounded-lg bg-terracotta-50 text-terracotta-600 flex-none">
+                        <i data-lucide="sticky-note" class="w-[18px] h-[18px]"></i>
+                    </span>
+                    <span class="flex-1 min-w-0">
+                        <span class="block text-sm font-semibold text-stone-900 truncate">{{ note.title }}</span>
+                        <span class="block text-xs text-stone-500">créé le {{ note.createdAt|date('d M Y') }}</span>
+                    </span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-stone-400"></i>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

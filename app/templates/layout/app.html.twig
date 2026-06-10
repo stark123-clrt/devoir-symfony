@@ -1,0 +1,181 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+{% set currentRoute = app.request.attributes.get('_route') %}
+
+{# ── Overlay mobile (fond sombre derrière la sidebar) ── #}
+<div id="sidebar-overlay"
+     onclick="closeSidebar()"
+     class="fixed inset-0 z-20 bg-stone-900/50 backdrop-blur-sm hidden lg:hidden"></div>
+
+<div class="h-screen overflow-hidden flex">
+
+  {# ===== SIDEBAR ===== #}
+  <aside id="sidebar"
+         class="fixed lg:static inset-y-0 left-0 z-30
+                w-72 lg:w-64 flex-none h-full
+                bg-stone-900 text-stone-300 flex flex-col
+                -translate-x-full lg:translate-x-0
+                transition-transform duration-300 ease-in-out">
+
+    {# Logo + bouton fermer (mobile) #}
+    <div class="flex items-center gap-3 px-5 h-16 flex-none border-b border-white/5">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2c2.5 3 1 5.5-.5 7C10 10.5 9 12.5 10 15c-2.5-1-4-3.5-3-6.5C8 5.5 10.5 4 12 2z" fill="#C2410C"/>
+        <path d="M14 9c1.8 1.6 2 3.8 1 5.8-1 2-3 3.2-5 3.2 3.3-.6 4.3-3.2 3-5.5-.6-1-.4-2.2 1-3.5z" fill="#F59E0B"/>
+      </svg>
+      <span class="font-display font-bold text-[17px] text-stone-50 whitespace-nowrap flex-1" style="letter-spacing:-0.02em">Note</span>
+      <button onclick="closeSidebar()"
+              class="lg:hidden flex items-center justify-center w-8 h-8 rounded-lg text-stone-400 hover:bg-white/[0.08] transition">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    {# User block #}
+    <div class="px-3 pt-4">
+      <div class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg bg-white/[0.04] border border-white/5">
+        {% if app.user %}
+          <span class="flex items-center justify-center w-7 h-7 rounded-md bg-terracotta-600 text-white font-display font-bold text-sm flex-none">
+            {{ app.user.pseudo|slice(0,2)|upper }}
+          </span>
+          <span class="flex-1 leading-tight min-w-0">
+            <span class="block text-sm font-semibold text-stone-50 truncate">{{ app.user.pseudo }}</span>
+            <span class="block text-[11px] text-stone-500 truncate">{{ app.user.email }}</span>
+          </span>
+        {% else %}
+          <span class="flex items-center justify-center w-7 h-7 rounded-md bg-stone-700 text-stone-400 flex-none">
+            <i data-lucide="user" class="w-4 h-4"></i>
+          </span>
+          <span class="flex-1 leading-tight min-w-0">
+            <span class="block text-sm font-semibold text-stone-50">Visiteur</span>
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Navigation #}
+    <nav class="flex-1 px-3 py-4 flex flex-col gap-0.5">
+      {% if app.user %}
+        <a href="{{ path('note_index') }}" onclick="closeSidebar()"
+           class="relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition
+                  {{ currentRoute starts with 'note' ? 'text-terracotta-600 bg-terracotta-600/10' : 'text-stone-400 hover:bg-white/[0.05]' }}">
+          {% if currentRoute starts with 'note' %}
+            <span class="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-terracotta-600"></span>
+          {% endif %}
+          <i data-lucide="sticky-note" class="w-[18px] h-[18px]"></i>
+          <span>Notes</span>
+        </a>
+
+        <a href="{{ path('profile_show') }}" onclick="closeSidebar()"
+           class="relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition
+                  {{ currentRoute starts with 'profile' ? 'text-terracotta-600 bg-terracotta-600/10' : 'text-stone-400 hover:bg-white/[0.05]' }}">
+          {% if currentRoute starts with 'profile' %}
+            <span class="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-terracotta-600"></span>
+          {% endif %}
+          <i data-lucide="user" class="w-[18px] h-[18px]"></i>
+          <span>Profil</span>
+        </a>
+      {% else %}
+        <a href="{{ path('app_login') }}" onclick="closeSidebar()"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-stone-400 hover:bg-white/[0.05] transition">
+          <i data-lucide="log-in" class="w-[18px] h-[18px]"></i>
+          <span>Connexion</span>
+        </a>
+        <a href="{{ path('app_register') }}" onclick="closeSidebar()"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-stone-400 hover:bg-white/[0.05] transition">
+          <i data-lucide="user-plus" class="w-[18px] h-[18px]"></i>
+          <span>Inscription</span>
+        </a>
+      {% endif %}
+    </nav>
+
+    {# Déconnexion (connecté seulement) #}
+    {% if app.user %}
+    <div class="px-3 py-4 border-t border-white/5">
+      <a href="{{ path('app_logout') }}"
+         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-stone-400 hover:bg-white/[0.05] hover:text-red-400 transition">
+        <i data-lucide="log-out" class="w-[18px] h-[18px]"></i>
+        <span>Déconnexion</span>
+      </a>
+    </div>
+    {% endif %}
+
+  </aside>
+
+  {# ===== ZONE PRINCIPALE ===== #}
+  <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+
+    {# Topbar #}
+    <header class="flex-none h-16 px-4 lg:px-8 flex items-center gap-3 border-b border-stone-300 bg-stone-50/80 backdrop-blur">
+
+      {# Hamburger (mobile uniquement) #}
+      <button onclick="openSidebar()"
+              class="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-stone-100 text-stone-600 transition flex-none">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+
+      <h1 class="font-display font-bold text-[20px] lg:text-[26px] leading-none flex-1 min-w-0 truncate" style="letter-spacing:-0.02em">
+        {% block page_title %}{% endblock %}
+      </h1>
+
+      {% block topbar_actions %}{% endblock %}
+
+      <div class="hidden sm:block w-px h-7 bg-stone-300 mx-1"></div>
+
+      {% if app.user %}
+        <a href="{{ path('profile_show') }}" class="inline-flex items-center gap-2 pl-1 pr-2 py-1 rounded-full hover:bg-stone-100 transition flex-none">
+          <span class="flex items-center justify-center w-8 h-8 rounded-full bg-terracotta-100 text-terracotta-700 text-sm font-semibold">
+            {{ app.user.pseudo|slice(0,2)|upper }}
+          </span>
+          <span class="hidden sm:block text-sm font-semibold text-stone-900">{{ app.user.pseudo }}</span>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-stone-500"></i>
+        </a>
+      {% else %}
+        <a href="{{ path('app_login') }}" class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-terracotta-600 hover:bg-terracotta-700 text-white text-sm font-semibold transition flex-none">
+          Connexion
+        </a>
+      {% endif %}
+    </header>
+
+    {# Contenu scrollable #}
+    <main class="flex-1 overflow-y-auto">
+
+      {# Flash messages #}
+      {% for type, messages in app.flashes(['success', 'error', 'warning']) %}
+        {% for message in messages %}
+          <div class="mx-4 sm:mx-6 lg:mx-8 mt-4
+            {% if type == 'success' %}bg-green-50 border border-green-200 text-green-800
+            {% elseif type == 'error' %}bg-red-50 border border-red-200 text-red-800
+            {% else %}bg-amber-50 border border-amber-200 text-amber-800{% endif %}
+            rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2.5">
+            <i data-lucide="{% if type == 'success' %}check-circle{% elseif type == 'error' %}x-circle{% else %}alert-triangle{% endif %}" class="w-4 h-4 flex-none"></i>
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endfor %}
+
+      {% block main %}{% endblock %}
+    </main>
+
+  </div>
+</div>
+
+{% block scripts %}{% endblock %}
+
+<script>
+  function openSidebar() {
+    document.getElementById('sidebar').classList.remove('-translate-x-full');
+    document.getElementById('sidebar-overlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.add('-translate-x-full');
+    document.getElementById('sidebar-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+  // Ferme la sidebar si on redimensionne vers desktop
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1024) closeSidebar();
+  });
+</script>
+{% endblock %}

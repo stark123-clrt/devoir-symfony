@@ -1,23 +1,53 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Note{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..700&family=Source+Sans+3:ital,wght@0,400..700;1,400..600&display=swap");
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                fontFamily: {
+                    display: ['"Playfair Display"', 'Georgia', 'serif'],
+                    body: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+                },
+                colors: {
+                    terracotta: { 700:'#9A3412', 600:'#C2410C', 100:'#FDEBE0', 50:'#FBF3EE' },
+                    amber:      { 500:'#F59E0B', 100:'#FEF3C7' },
+                    stone:      { 900:'#1C1917', 800:'#292524', 700:'#57534E', 600:'#44403C', 500:'#78716C', 400:'#A8A29E', 300:'#D6D3D1', 200:'#E7E5E4', 100:'#F5F5F4', 50:'#FAFAF9' },
+                    green:      { 600:'#16A34A', 100:'#DCFCE7' },
+                    orange:     { 600:'#D97706', 100:'#FEF0D9' },
+                    red:        { 600:'#DC2626', 100:'#FEE2E2' },
+                },
+                boxShadow: {
+                    soft: '0 4px 16px rgba(28,25,23,0.06)',
+                    pop:  '0 8px 24px rgba(28,25,23,0.12)',
+                },
+            }},
+        };
+    </script>
+    <style>
+        body { font-family: 'Source Sans 3', system-ui, sans-serif; }
+        .overline { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+        .ember-card { transition: box-shadow .15s cubic-bezier(.4,0,.2,1), transform .15s cubic-bezier(.4,0,.2,1); }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-thumb { background: #D6D3D1; border-radius: 9999px; border: 3px solid transparent; background-clip: content-box; }
+    </style>
+    {% block stylesheets %}{% endblock %}
+    {% block javascripts %}{% endblock %}
+</head>
+<body class="bg-stone-50 text-stone-900">
 
-        {% block javascripts %}
-        {% endblock %}
+{% block body %}{% endblock %}
 
-        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphpHotReload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
+{% block scripts %}{% endblock %}
+</body>
 </html>

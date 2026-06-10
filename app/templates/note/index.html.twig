@@ -1,0 +1,208 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Notes{% endblock %}
+
+{% block page_title %}Notes{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ path('note_new') }}"
+     class="inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-terracotta-600 hover:bg-terracotta-700 text-white text-sm font-semibold transition shadow-sm">
+    <i data-lucide="plus" class="w-4 h-4"></i> Ajouter une note
+  </a>
+{% endblock %}
+
+{% block main %}
+<div class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+
+  {# Barre de recherche #}
+  <div class="flex items-center gap-3 bg-white border border-stone-300 rounded-xl px-4 py-3 shadow-sm mb-10 focus-within:border-terracotta-600 focus-within:ring-4 focus-within:ring-terracotta-600/10 transition">
+    <i data-lucide="search" class="w-5 h-5 text-stone-400 flex-none"></i>
+    <input id="note-search"
+           type="text"
+           placeholder="Rechercher une note…"
+           class="flex-1 bg-transparent outline-none text-[15px] text-stone-900 placeholder:text-stone-400">
+    <button id="search-clear"
+            onclick="clearSearch()"
+            class="hidden items-center justify-center w-6 h-6 rounded-full bg-stone-200 hover:bg-stone-300 text-stone-500 transition">
+      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+    </button>
+  </div>
+
+  {# En-tête liste #}
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="font-display font-bold text-xl" style="letter-spacing:-0.02em">Toutes les notes</h3>
+    <span id="notes-count" class="text-sm text-stone-500">{{ notes|length }} note{{ notes|length != 1 ? 's' : '' }}</span>
+  </div>
+
+  {% if notes is empty %}
+    <div class="flex flex-col items-center justify-center py-24 text-center">
+      <span class="flex items-center justify-center w-16 h-16 rounded-2xl bg-terracotta-50 text-terracotta-600 mb-4">
+        <i data-lucide="sticky-note" class="w-8 h-8"></i>
+      </span>
+      <p class="font-semibold text-stone-700 mb-1">Aucune note pour le moment</p>
+      <p class="text-sm text-stone-400 mb-6">Commencez par créer votre première note.</p>
+      <a href="{{ path('note_new') }}"
+         class="inline-flex items-center gap-2 h-10 px-5 rounded-lg bg-terracotta-600 hover:bg-terracotta-700 text-white text-sm font-semibold transition">
+        <i data-lucide="plus" class="w-4 h-4"></i> Créer une note
+      </a>
+    </div>
+  {% else %}
+    {# Message aucun résultat de recherche #}
+    <div id="empty-search" style="display:none"
+         class="flex flex-col items-center justify-center py-16 text-center">
+      <span class="flex items-center justify-center w-12 h-12 rounded-xl bg-stone-100 text-stone-400 mb-3">
+        <i data-lucide="search-x" class="w-6 h-6"></i>
+      </span>
+      <p class="text-sm font-semibold text-stone-700 mb-1">Aucune note trouvée</p>
+      <p class="text-xs text-stone-400">Essayez un autre mot-clé.</p>
+    </div>
+
+    <div id="notes-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+      {% for note in notes %}
+        <article class="ember-card relative bg-white border border-stone-300 rounded-xl p-5 hover:-translate-y-0.5 hover:shadow-soft transition"
+                 data-title="{{ note.title|lower }}"
+                 data-content="{{ note.content|lower }}">
+
+          {# En-tête carte #}
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex-1 min-w-0">
+              <h4 class="note-title font-semibold text-[15px] text-stone-900 leading-snug mb-1">
+                {{ note.title }}
+              </h4>
+              <span class="inline-flex items-center gap-1 text-[11px] font-semibold rounded-full px-2 py-0.5
+                {{ note.isPublic ? 'bg-green-100 text-green-600' : 'bg-stone-100 text-stone-500' }}">
+                <i data-lucide="{{ note.isPublic ? 'globe' : 'lock' }}" class="w-3 h-3"></i>
+                {{ note.isPublic ? 'Publique' : 'Privée' }}
+              </span>
+            </div>
+
+            {# Menu contextuel #}
+            <div class="relative flex-none">
+              <button data-menu-btn="{{ note.id }}"
+                      onclick="toggleNoteMenu({{ note.id }})"
+                      class="w-7 h-7 grid place-items-center rounded-md text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition">
+                <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+              </button>
+              <div id="note-menu-{{ note.id }}"
+                   class="hidden absolute right-0 top-9 z-30 w-44 bg-white border border-stone-300 rounded-xl py-1.5"
+                   style="box-shadow: 0 8px 24px rgba(28,25,23,0.12);">
+                <a href="{{ path('note_show', {'id': note.id}) }}"
+                   class="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-100 transition">
+                  <i data-lucide="eye" class="w-4 h-4"></i> Voir
+                </a>
+                <a href="{{ path('note_edit', {'id': note.id}) }}"
+                   class="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-100 transition">
+                  <i data-lucide="pencil" class="w-4 h-4"></i> Éditer
+                </a>
+                <div class="h-px bg-stone-100 my-1"></div>
+                <form method="post" action="{{ path('note_delete', {'id': note.id}) }}"
+                      onsubmit="return confirm('Supprimer cette note ?')">
+                  <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ note.id) }}">
+                  <button type="submit"
+                          class="w-full flex items-center gap-3 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100/60 transition">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Supprimer
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          {# Extrait du contenu #}
+          <p class="note-excerpt text-sm text-stone-500 leading-relaxed mb-5 line-clamp-3">
+            {{ note.content|slice(0, 120) }}{% if note.content|length > 120 %}…{% endif %}
+          </p>
+
+          {# Footer carte #}
+          <div class="flex items-center justify-between">
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-terracotta-700 bg-terracotta-50 rounded-full px-2.5 py-1">
+              <i data-lucide="clock" class="w-3 h-3"></i>
+              {{ note.createdAt|date('d M Y · H:i') }}
+            </span>
+            <div class="flex items-center gap-1 text-stone-400">
+              <a href="{{ path('note_edit', {'id': note.id}) }}" class="hover:text-stone-700 transition">
+                <i data-lucide="pencil" class="w-4 h-4"></i>
+              </a>
+            </div>
+          </div>
+
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ── Dropdown menus ──────────────────────────────────────────
+  function toggleNoteMenu(id) {
+    const target = document.getElementById('note-menu-' + id);
+    const isHidden = target.classList.contains('hidden');
+    document.querySelectorAll('[id^="note-menu-"]').forEach(m => m.classList.add('hidden'));
+    if (isHidden) target.classList.remove('hidden');
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[id^="note-menu-"]') && !e.target.closest('[data-menu-btn]')) {
+      document.querySelectorAll('[id^="note-menu-"]').forEach(m => m.classList.add('hidden'));
+    }
+  });
+
+  // ── Recherche + surlignage ──────────────────────────────────
+  const searchInput  = document.getElementById('note-search');
+  const clearBtn     = document.getElementById('search-clear');
+  const countEl      = document.getElementById('notes-count');
+  const emptySearch  = document.getElementById('empty-search');
+  const notesGrid    = document.getElementById('notes-grid');
+
+  // Textes originaux (avant surlignage)
+  const cards = Array.from(document.querySelectorAll('[data-title]'));
+  const origTitles   = cards.map(c => c.querySelector('.note-title').innerHTML);
+  const origExcerpts = cards.map(c => c.querySelector('.note-excerpt').innerHTML);
+
+  function highlight(text, query) {
+    if (!query) return text;
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp(`(${escaped})`, 'gi'),
+      '<mark class="bg-amber-200 text-stone-900 rounded px-0.5">$1</mark>');
+  }
+
+  function clearSearch() {
+    searchInput.value = '';
+    searchInput.dispatchEvent(new Event('input'));
+    searchInput.focus();
+  }
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+
+    // Bouton clear
+    clearBtn.classList.toggle('hidden', q === '');
+    clearBtn.classList.toggle('flex', q !== '');
+
+    let visible = 0;
+    cards.forEach((card, i) => {
+      const titleText   = card.dataset.title;
+      const contentText = card.dataset.content;
+      const matches = !q || titleText.includes(q) || contentText.includes(q);
+
+      card.style.display = matches ? '' : 'none';
+      if (matches) {
+        visible++;
+        card.querySelector('.note-title').innerHTML   = highlight(origTitles[i], q);
+        card.querySelector('.note-excerpt').innerHTML = highlight(origExcerpts[i], q);
+      } else {
+        card.querySelector('.note-title').innerHTML   = origTitles[i];
+        card.querySelector('.note-excerpt').innerHTML = origExcerpts[i];
+      }
+    });
+
+    // Compteur
+    if (countEl) countEl.textContent = visible + ' note' + (visible !== 1 ? 's' : '');
+
+    // Message aucun résultat
+    if (emptySearch) emptySearch.style.display = (q && visible === 0) ? '' : 'none';
+    if (notesGrid)   notesGrid.style.display   = (q && visible === 0) ? 'none' : '';
+  });
+</script>
+{% endblock %}
