@@ -13,7 +13,7 @@
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/<votre-utilisateur>/devoir-symfony.git
+git clone https://github.com/stark123-clrt/devoir-symfony.git
 cd devoir-symfony
 ```
 
@@ -107,5 +107,5 @@ devoir-symfony/
 │   └── public/           # Point d'entrée (index.php)
 ├── docker-compose.yml    # Configuration Docker
 ├── Dockerfile            # Image PHP/Apache
-└── DEMARRAGE.md          # Ce fichier
+└── README.md             # Ce fichier
 ```
